@@ -58,6 +58,7 @@ laterality_labels =  groupby_count(reports_with_laterality_labels, 3);
 behavior_labels =  groupby_count(reports_with_behavior_labels, 4);
 histology_labels =  groupby_count(reports_with_histology_labels, 5);
 
+# constructing co-relation matrix
 num_of_labels = sum([len(sorted_distinct_labels(reports_with_all_labels, i)) 
                        for i in range(1, 6)]);
 num_of_document = len(reports_with_all_labels);
@@ -76,30 +77,20 @@ for i in range(len(labellist)):
 
 label_correction_matrix = np.zeros((num_of_labels, num_of_labels), float);
 
-
-for i in range(len(labellist)):
-    for j in range(len(labellist)):
-        label_correction_matrix[i][j] = np.dot(l2vec[i], l2vec[j]);
-        
-[q, r] = scipy.linalg.qr(label_correction_matrix);    
-        
-
-# display correlations
+# displaying co-relation matrix
 fig = plt.figure;        
 img=plt.imshow(label_correction_matrix, interpolation='none', cmap='gray');    
 plt.colorbar()
 plt.show() 
 
-# after
+# QR decomposition
+for i in range(len(labellist)):
+    for j in range(len(labellist)):
+        label_correction_matrix[i][j] = np.dot(l2vec[i], l2vec[j]);
+[q, r] = scipy.linalg.qr(label_correction_matrix);   
+
+# displaying r
 fig = plt.figure;        
 img=plt.imshow(np.abs(r), interpolation='none', cmap='gray');    
 plt.colorbar()
 plt.show() 
-       
-
-"""                       
-for report in reports_tuple_sorted_by_subsite:
-    print('\n' + str(report) + '\n')
-    input("Press Enter to continue...")
-    print('-------------done------------')
-"""
