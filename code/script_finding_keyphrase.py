@@ -55,95 +55,13 @@ reports_with_any_labels = read_reports_and_label.parse(dir+filename);
 
 reports = [x for x in reports_with_any_labels if x[taskid] != ''];
 
-#construct sorted word list
-word_list = [];
-for doc in reports:
-    word_list = word_list + list(set(doc[0]));
+from gensim.models import Phrases
+documents = ["the mayor of new york was there", "machine learning can be useful sometimes","new york mayor was present"]
 
-word_list = list(set(word_list));
-word_list = sorted(word_list);  
-
-# give an index to each word 
-wordidx = dict();
-i=0;
-for x in word_list:
-    wordidx[x] = i;
-    i=i+1;
-
-num_of_words = len(word_list);
-num_of_columns = len(reports);
-
-# generate word-document matrix
-# row: one word each row
-# col: one document each column
-word_document_matrix = np.zeros((num_of_words, num_of_columns), int);
-
-for idoc in range(len(reports)):
-    temp_wl = reports[idoc][0];
-    temp_wl = sorted(temp_wl);
-    word_counts = [(key, len(list(group))) for key, group 
-                   in groupby(temp_wl)];
-    for word_count in word_counts:                
-        word_document_matrix[wordidx[word_count[0]], idoc] = word_count[1]; 
-        
-#word_document_matrix_mask = word_document_matrix.sum(axis=1) > 3 ;
-                   
-#word_document_matrix = \
-#    mask(word_document_matrix, word_document_matrix_mask);
-    
-plot_fig(np.log2(word_document_matrix + 1))
-
-# generate word-class matrix
-word_class_matrix =  \
-    classembedding(word_document_matrix, reports, taskid);
-labellist = sorted_distinct_labels(reports, taskid);
-word_class_matrix = \
-sklearn.preprocessing.normalize(word_class_matrix, norm='l1', axis=1);
-plot_fig(word_class_matrix, True)
-
-# document based filtering
-valid_word = word_document_matrix.sum(axis=1) > 5
-
-# class based filtering
-valid_word= np.logical_and(((word_class_matrix>0.5).sum(axis=1) != 0),
-                           valid_word);
-
-
-word_unique_per_class = [x for x, v in zip(word_list, valid_word) 
-    if v == 1]
-# word-word corelation
-#C = np.matmul(word_class_matrix, np.transpose(word_class_matrix));
-#C_CSC = sp.sparse.csc_matrix(C);
-#perm = sp.sparse.csgraph.reverse_cuthill_mckee(C_CSC);
-#C_reordered = np.copy(C);
-#C_reordered[np.arange(num_of_words), :] = C_reordered[perm, :];
-#C_reordered[:, np.arange(num_of_words)] = C_reordered[:, perm];
-#plot_fig(C)
-#plot_fig(C_reordered)
-#plot_fig(logistic.cdf(C_reordered))
-#P, L, U = sp.linalg.lu(C);
-#plot_fig(abs(L))
-
-
-    
-
-# manifold learning
-#import sklearn.manifold
-
-#Y = sklearn.manifold.locally_linear_embedding(
-#       word_document_matrix, n_neighbors=25, n_components=10);
-        
-#fig = plt.figure;
-#img=plt.imshow(Y, interpolation='none', cmap='gray', aspect='auto');
-#plt.colorbar()
-#plt.show()
-
-        
-#[U, S, V] = sp.linalg.svd(word_document_matrix);
-
-# Created by Abhishek K Dubey
-# Date: Dec 13, 2018
-
+sentence_stream = [doc.split(" ") for doc in documents]
+bigram = Phrases(sentence_stream, min_count=1, threshold=2)
+sent = [u'the', u'mayor', u'of', u'new', u'york', u'was', u'there']
+print(bigram[sent])
 
 
 #!/usr/bin/env python3
